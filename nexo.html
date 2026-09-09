@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nexo AI Agent - Login & Sign Up</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #f4f4f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #login-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .login-box {
+            background: #ffffff;
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-box h2 {
+            margin-bottom: 10px;
+            color: #333333;
+            font-size: 24px;
+        }
+
+        .login-box p {
+            color: #666666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #444444;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cccccc;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #4f46e5;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .btn-primary {
+            background-color: #4f46e5;
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background-color: #4338ca;
+        }
+
+        .toggle-link {
+            display: block;
+            margin-top: 15px;
+            color: #4f46e5;
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .msg-box {
+            font-size: 13px;
+            margin-bottom: 15px;
+            padding: 8px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .msg-error {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        .msg-success {
+            background-color: #d1fae5;
+            color: #059669;
+        }
+
+        /* Top Bar & Logout Button Styles */
+        #app-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50px;
+            background: #ffffff;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-sizing: border-box;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 5;
+        }
+
+        .user-info {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .btn-logout {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-logout:hover {
+            background: #dc2626;
+        }
+
+        iframe {
+            width: 100%;
+            height: calc(100% - 50px);
+            margin-top: 50px;
+            border: none;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header for Logout -->
+    <div id="app-header">
+        <span class="user-info" id="logged-user-email">User</span>
+        <button class="btn-logout" onclick="handleLogout()">Logout</button>
+    </div>
+
+    <!-- Login & Sign Up Container -->
+    <div id="login-container">
+        <div class="login-box">
+            <h2 id="form-title">Login to nexo AI</h2>
+            <p id="form-subtitle">Apna Email aur Password daalein</p>
+            
+            <div id="msg-box" class="msg-box"></div>
+
+            <form id="auth-form" onsubmit="event.preventDefault();">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" required placeholder="name@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required placeholder="••••••••">
+                </div>
+
+                <button type="button" id="main-btn" class="btn btn-primary" onclick="handleAction()">Login</button>
+            </form>
+
+            <span class="toggle-link" id="toggle-btn" onclick="switchMode()">Naya account banayein (Sign Up)</span>
+        </div>
+    </div>
+
+    <!-- Botpress Chatbot Iframe -->
+    <iframe id="chat-iframe" src="https://cdn.botpress.cloud/webchat/v5.0/shareable.html?configUrl=https://files.bpcontent.cloud/2026/09/05/17/20260905172534-UVAC7QS8.json"></iframe>
+
+    <script>
+        let isSignUpMode = false;
+
+        // Page Load hote hi check karein ki kya user pehle se logged-in hai
+        window.onload = function() {
+            let activeUser = localStorage.getItem('nexo_active_user');
+            if (activeUser) {
+                openChat(activeUser);
+            }
+        };
+
+        // Mode switch karein (Login <-> Sign Up)
+        function switchMode() {
+            isSignUpMode = !isSignUpMode;
+            clearMessage();
+            
+            if (isSignUpMode) {
+                document.getElementById('form-title').innerText = "Create New Account";
+                document.getElementById('form-subtitle').innerText = "Nexo AI ke liye naya account banayein";
+                document.getElementById('main-btn').innerText = "Create Account (Sign Up)";
+                document.getElementById('toggle-btn').innerText = "Pehle se account hai? Login karein";
+            } else {
+                document.getElementById('form-title').innerText = "Login to nexo AI";
+                document.getElementById('form-subtitle').innerText = "Apna Email aur Password daalein";
+                document.getElementById('main-btn').innerText = "Login";
+                document.getElementById('toggle-btn').innerText = "Naya account banayein (Sign Up)";
+            }
+        }
+
+        // Main Login / Sign Up Action Handle Karein
+        function handleAction() {
+            let email = document.getElementById('email').value.trim().toLowerCase();
+            let password = document.getElementById('password').value;
+
+            if (!email || !password) {
+                showMessage("Email aur Password dono bharna zaroori hai!", "error");
+                return;
+            }
+
+            // Local Database se accounts read karein
+            let users = JSON.parse(localStorage.getItem('nexo_users') || '{}');
+
+            if (isSignUpMode) {
+                // 1. SIGN UP LOGIC
+                if (users[email]) {
+                    // Check: Is naam se pehle se account hai ya nahi
+                    showMessage("Yeh Email pehle se registered hai! Kripya Login karein.", "error");
+                } else {
+                    // Naya user save karein
+                    users[email] = password;
+                    localStorage.setItem('nexo_users', JSON.stringify(users));
+                    
+                    // Direct login karayein account banane ke baad
+                    localStorage.setItem('nexo_active_user', email);
+                    openChat(email);
+                }
+            } else {
+                // 2. LOGIN LOGIC
+                if (!users[email]) {
+                    showMessage("Yeh account nahi mila! Pehle Sign Up karein.", "error");
+                } else if (users[email] !== password) {
+                    showMessage("Galat Password! Kripya sahi password daalein.", "error");
+                } else {
+                    // Sahi Password -> Login Successful
+                    localStorage.setItem('nexo_active_user', email);
+                    openChat(email);
+                }
+            }
+        }
+
+        // Chat Screen dikhane ka function
+        function openChat(email) {
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('app-header').style.display = 'flex';
+            document.getElementById('chat-iframe').style.display = 'block';
+            document.getElementById('logged-user-email').innerText = "User: " + email;
+        }
+
+        // Logout karne ka function
+        function handleLogout() {
+            localStorage.removeItem('nexo_active_user'); // Saved session delete karein
+            document.getElementById('app-header').style.display = 'none';
+            document.getElementById('chat-iframe').style.display = 'none';
+            document.getElementById('login-container').style.display = 'flex';
+            
+            // Clear inputs
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
+            clearMessage();
+        }
+
+        function showMessage(text, type) {
+            let msgBox = document.getElementById('msg-box');
+            msgBox.innerText = text;
+            msgBox.className = "msg-box " + (type === "error" ? "msg-error" : "msg-success");
+            msgBox.style.display = "block";
+        }
+
+        function clearMessage() {
+            let msgBox = document.getElementById('msg-box');
+            msgBox.style.display = "none";
+        }
+    </script>
+
+</body>
+</html>
