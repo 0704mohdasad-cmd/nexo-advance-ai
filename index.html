@@ -185,7 +185,7 @@
     <div id="login-container">
         <div class="login-box">
             <h2 id="form-title">Login to nexo AI</h2>
-            <p id="form-subtitle">Apna Email aur Password daalein</p>
+            <p id="form-subtitle">enter nexo account details</p>
             
             <div id="msg-box" class="msg-box"></div>
 
@@ -203,7 +203,7 @@
                 <button type="button" id="main-btn" class="btn btn-primary" onclick="handleAction()">Login</button>
             </form>
 
-            <span class="toggle-link" id="toggle-btn" onclick="switchMode()">Naya account banayein (Sign Up)</span>
+            <span class="toggle-link" id="toggle-btn" onclick="switchMode()">make new account  (Sign Up)</span>
         </div>
     </div>
 
@@ -245,7 +245,7 @@
             let password = document.getElementById('password').value;
 
             if (!email || !password) {
-                showMessage("Email aur Password dono bharna zaroori hai!", "error");
+                showMessage("account name and password is essential!", "error");
                 return;
             }
 
@@ -255,8 +255,8 @@
             if (isSignUpMode) {
                 // 1. SIGN UP LOGIC
                 if (users[email]) {
-                    // Check: Is naam se pehle se account hai ya nahi
-                    showMessage("Yeh Email pehle se registered hai! Kripya Login karein.", "error");
+                    // Check: this account is already exist
+                    showMessage("this account is already exist!please login.", "error");
                 } else {
                     // Naya user save karein
                     users[email] = password;
@@ -269,9 +269,9 @@
             } else {
                 // 2. LOGIN LOGIC
                 if (!users[email]) {
-                    showMessage("Yeh account nahi mila! Pehle Sign Up karein.", "error");
+                    showMessage("account not found! Sign Up please.", "error");
                 } else if (users[email] !== password) {
-                    showMessage("Galat Password! Kripya sahi password daalein.", "error");
+                    showMessage("wrong Password! enter right password .", "error");
                 } else {
                     // Sahi Password -> Login Successful
                     localStorage.setItem('nexo_active_user', email);
